@@ -1,5 +1,3 @@
-package org.apache.hadoop.examples;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -27,7 +25,6 @@ import java.util.StringTokenizer;
 // >>> Don't Change
 public class TitleCount extends Configured implements Tool {
     public static void main(String[] args) throws Exception {
-
         int res = ToolRunner.run(new Configuration(), new TitleCount(), args);
         System.exit(res);
     }
@@ -44,21 +41,9 @@ public class TitleCount extends Configured implements Tool {
         job.setMapperClass(TitleCountMap.class);
         job.setReducerClass(TitleCountReduce.class);
 
-//        FileInputFormat.setInputPaths(job, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        //begin to delete output path
-        /* 删除输出目录 */
-        Configuration conf = new Configuration();
-        Path outputPath = new Path("hdfs://localhost:9000/A-output");
-        // outputPath.getFileSystem(conf).delete(outputPath, true);
-        
-      FileInputFormat.setInputPaths(job, new Path("hdfs://localhost:9000/mp2/titles"));
-      FileOutputFormat.setOutputPath(job, outputPath);
-      
-      //end output path delete here
-        
         job.setJarByClass(TitleCount.class);
         return job.waitForCompletion(true) ? 0 : 1;
     }
@@ -89,40 +74,24 @@ public class TitleCount extends Configured implements Tool {
 
             Configuration conf = context.getConfiguration();
 
-//            String stopWordsPath = conf.get("stopwords");
-//            String delimitersPath = conf.get("delimiters");
-//
-//            this.stopWords = Arrays.asList(readHDFSFile(stopWordsPath, conf).split("\n"));
-//            this.delimiters = readHDFSFile(delimitersPath, conf);
-//            
-            this.stopWords = Arrays.asList(readHDFSFile("/mp2/misc/stopwords.txt", conf).split("\n"));
-            this.delimiters = readHDFSFile("/mp2/misc/delimiters.txt", conf);
-            
-//            "hdfs://localhost:9000/mp2/titles"
+            String stopWordsPath = conf.get("stopwords");
+            String delimitersPath = conf.get("delimiters");
+
+            this.stopWords = Arrays.asList(readHDFSFile(stopWordsPath, conf).split("\n"));
+            this.delimiters = readHDFSFile(delimitersPath, conf);
         }
-        
+
+
         @Override
-        public void map(Object key, Text value, Context context) throws IOException,InterruptedException {
-            String line = value.toString();
-            StringTokenizer tokenizer = new StringTokenizer(line, delimiters);
-                while (tokenizer.hasMoreTokens()) {
-                        String nextToken = tokenizer.nextToken();
-                        if(!stopWords.contains(nextToken.trim().toLowerCase())) {
-                                context.write(new Text(nextToken),new IntWritable(1));
-                        }
-                }
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            // TODO
         }
     }
 
     public static class TitleCountReduce extends Reducer<Text, IntWritable, Text, IntWritable> {
         @Override
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-           int sum = 0;
-                for (IntWritable val : values) {
-                        sum += val.get();
-                }
-                context.write(key, new IntWritable(sum));
+            // TODO
         }
-
     }
 }
